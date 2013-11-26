@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd">
+
+	<!-- =============================================================== -->
+	<!-- Resources -->
+	<!-- =============================================================== -->
+	<bean id="propertyConfigurer"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath:jdbc.properties</value>
+			</list>
+		</property>
+	</bean>
+
+	<!-- =============================================================== -->
+	<!-- spring cron job - by ade -->
+	<!-- =============================================================== -->
+	<bean id="executor"
+		class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+		<property name="corePoolSize" value="10" />
+		<property name="maxPoolSize" value="100" />
+		<property name="queueCapacity" value="500" />
+	</bean>
+
+	<bean id="checkJob" class="net.synergyinfosys.xmpp.task.PushStatusCheckJob"></bean>
+
+	<bean id="checkThreadPoolJob" class="net.synergyinfosys.xmpp.task.ThreadPoolCheckJob"></bean>
+
+	<bean id="jobDetail"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject" ref="checkJob" />
+		<property name="targetMethod" value="doCheck" />
+	</bean>
+
+	<bean id="threadPoolJobDetail"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject" ref="checkThreadPoolJob" />
+		<property name="targetMethod" value="doCheck" />
+	</bean>
+
+	<bean id="cronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="jobDetail" />
+		<property name="cronExpression" value="10 0/10 * * * ?" />
+	</bean>
+
+	<bean id="cronTriggerForThreadPool" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="threadPoolJobDetail" />
+		<property name="cronExpression" value="10 0/1 * * * ?" />
+	</bean>
+
+	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+		<property name="triggers">
+			<list>
+				<ref bean="cronTrigger" />
+				<ref bean="cronTriggerForThreadPool" />
+				<ref bean="recordTrigger" />
+			</list>
+		</property>
+		<property name="taskExecutor" ref="executor" />
+	</bean>
+
+	<bean id="recordTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="recordJobDetail" />
+		<property name="cronExpression" value="0 0 0/1 * * ?" />
+	</bean>
+
+	<bean id="recordJobDetail"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject" ref="recordOnlineUserCountJob" />
+		<property name="targetMethod" value="doRecord" />
+	</bean>
+
+	<bean id="recordOnlineUserCountJob" class="net.synergyinfosys.xmpp.task.RecordOnlineUserCountJob"></bean>
+
+
+</beans>

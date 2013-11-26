@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!-- For Automation Test-->
+<project name="eDocTest" default="runall" basedir=".">
+	<property name="junit.output.dir" value="junit"/>
+	<property name="src.dir" value="." />
+	<!--  <property name="lib.dir" value="/usr/local/tomcat_for_xmpp/webapps/MyPush/WEB-INF/lib" /> --> 
+	<property name="lib.dir" value="/Users/ade/Desktop/Desktop/tomcat_for_xmpp/webapps/MyPush/WEB-INF/lib" />
+	<property name="temp.dir" value="temp" />
+	<property name="path" value="net/synergyinfo/mypush/test/restInterface" />
+
+	<path id="build.class.path">
+		<fileset dir="${ant.home}/lib">
+			<include name="**/*.jar" />
+		</fileset>
+		<fileset dir="${lib.dir}">
+			<include name="**/*.jar" />
+		</fileset>
+		<!-- <fileset dir="../main">
+			<include name="**/*.class" />
+		</fileset> -->
+	</path>
+
+	<target name="clean">
+		<echo>=== Cleaning ===</echo>
+		<delete dir="${temp.dir}" />
+		<delete dir="${junit.output.dir}" />
+	</target>
+
+	<target name="prepare" depends="clean">
+		<echo>=== making dir ===</echo>
+		<mkdir dir="${temp.dir}" />
+		<mkdir dir="${junit.output.dir}" />
+	</target>
+
+	<target name="compile" depends="prepare">
+		<echo>=== COMPILE ===</echo>
+		<echo message="I'm here: ${temp.dir}" />
+		<echo message="Ant home: ${ant.home}" />
+		<javac debug="on" includeJavaRuntime="yes" includeantruntime="yes" srcdir="${src.dir}" destdir="${temp.dir}" includes="**/*" excludes="org/**" encoding="UTF-8">
+			<classpath refid="build.class.path" />
+		</javac>
+
+
+	</target>
+
+	<path id="edoc.test">
+		<pathelement location="${temp.dir}" />
+		<fileset dir="${lib.dir}">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+
+	<target name="runall" depends="compile">
+	    <!-- 
+		<echo>=== copying resource files===</echo>
+		<copy todir="${temp.dir}/net/synergyinfo/edoc/test/files/">
+			<fileset dir="${src.dir}/net/synergyinfo/edoc/test/files/">
+				<include name="*" />
+			</fileset>
+		</copy>
+		 -->
+		<echo>=== copying test properties files ===</echo>
+		<copy todir="${temp.dir}/${path}">
+			<fileset dir="${src.dir}/${path}">
+				<include name="test.properties" />
+			</fileset>
+		</copy>
+
+		<echo>=== copying log4j properties files ===</echo>
+		<copy todir="${temp.dir}">
+			<fileset dir="${src.dir}">
+				<include name="log4j.properties" />
+			</fileset>
+		</copy>
+		<mkdir dir="${junit.output.dir}" />
+		<junit printsummary="withOutAndErr" fork="true" haltonfailure="false" failureproperty="tests.failed" showoutput="true">
+			<formatter type="xml"/>
+			<classpath refid="edoc.test"/>
+
+			<batchtest todir="${junit.output.dir}">
+				<fileset dir="${basedir}">
+					<include name="**/*TestRestfulInterface_*"/>
+				</fileset>
+			</batchtest>
+		</junit>
+	</target>
+	<!--
+	<target name="junitreport" depends="runall">
+		<junitreport todir="${junit.output.dir}">
+			<fileset dir="${junit.output.dir}">
+				<include name="TEST-*.xml"/>
+			</fileset>
+			<report format="frames" todir="${junit.output.dir}"/>
+		</junitreport>
+	</target>
+-->
+</project>

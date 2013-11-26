@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="mypush" default="install" basedir=".">
+	
+	<property name="build.dir" value="build" />
+	
+	<property name="jsp.dir.name" value="WebContent" />
+	<property name="package.name" value="MyPush.war" />
+	
+	<!-- tomcat路径     /opt/server/tomcat_for_xmpp-->
+	<property name="tomcat.dir" value="/Users/ade/Desktop/desktop/tomcat_for_xmpp" />
+
+	<property name="webapp.dir" value="${tomcat.dir}/webapps" />
+	<property name="tomcat.lib.dir" value="${tomcat.dir}/lib" />
+
+	<property name="lib.dir" value="${jsp.dir.name}/WEB-INF/lib" />
+	<property name="src.dir" value="src" />
+	<property name="pages.dir" value="${jsp.dir.name}" />
+	<property name="dest.dir" value="${build.dir}/target" />
+	<property name="resources.dir" value="resources" />
+	<property name="package.file" value="${package.name}" />
+
+	<property name="temp.dir" value="${build.dir}/temp" />
+	<property name="temp.dir.web-inf" value="${temp.dir}/WEB-INF" />
+	<property name="temp.dir.lib" value="${temp.dir.web-inf}/lib" />
+	<property name="temp.dir.classes" value="${temp.dir.web-inf}/classes" />
+	<property name="temp.dir.meta-inf" value="${temp.dir}/META-INF" />
+	
+	<property name="javadoc.dir" value="${build.dir}/javadoc" />
+	
+	<property name="log.dir" value="${build.dir}/log" />
+	
+	<path id="build.class.path">
+		<fileset dir="${lib.dir}">
+			<include name="**/*.jar" />
+		</fileset>
+		<fileset dir="${tomcat.lib.dir}">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+	
+	<!-- 是否进行单元测试 -->
+	<condition property="doJunit">
+		<istrue value="false"/>                  
+	</condition>
+	
+	<!-- 是否生成javadoc -->
+	<condition property="doJavadoc">
+		<istrue value="false"/>                  
+	</condition>
+	
+	<!-- 是否部署 -->
+	<condition property="doInstall">
+		<istrue value="false"/>                  
+	</condition>
+	
+	<target name="make">
+		<echo>=== Make ===</echo>
+		<mkdir dir="${dest.dir}" />
+		<mkdir dir="${temp.dir}" />
+		<mkdir dir="${javadoc.dir}" />
+		<mkdir dir="${log.dir}" />
+	</target>
+	
+	<target name="clean" depends="make">
+		<echo>=== Cleaning ===</echo>
+		<delete>
+			<fileset dir="${dest.dir}" includes="**/*" />
+		</delete>
+		<delete dir="${temp.dir}" />
+		<delete dir="${temp.dir.classes}" />
+		<delete dir="${temp.dir.meta-inf}" />
+		<delete dir="${temp.dir.web-inf}" />
+	</target>
+	
+	<target name="prepare" depends="clean">
+		<echo>=== Making dir ===</echo>
+		<mkdir dir="${dest.dir}" />
+		<mkdir dir="${temp.dir}" />
+		<mkdir dir="${temp.dir.lib}" />
+		<mkdir dir="${temp.dir.meta-inf}" />
+		<mkdir dir="${temp.dir.web-inf}" />
+		<mkdir dir="${temp.dir.classes}" />
+	</target>
+	
+	<target name="test" depends="prepare">
+	   	
+	   	<copy todir="${temp.dir.classes}">
+		    <fileset dir="${resources.dir}"/>
+		</copy>
+	    
+	    
+	</target>
+	
+	<target name="compile" depends="prepare">
+		<echo>=== COMPILE ===</echo>
+		<echo>Compiling ${src.dir} files ...</echo>
+		<javac debug="on" includeJavaRuntime="yes" includeantruntime="no" srcdir="${src.dir}" destdir="${temp.dir.classes}" includes="**/*" excludes="" encoding="UTF-8">
+			<classpath refid="build.class.path" />
+		</javac>
+	</target>
+	
+	<target name="package" depends="compile">
+		<echo>=== PACKAGE ===</echo>
+		
+		<copy todir="${temp.dir}">
+		    <fileset dir="${jsp.dir.name}"/>
+		</copy>
+		
+		<copy todir="${temp.dir.classes}">
+		    <fileset dir="${resources.dir}"/>
+		</copy>
+		
+		<echo>=== generate war file ===</echo>
+		<war destfile="${package.file}" webxml="${temp.dir.web-inf}/web.xml" basedir="${temp.dir}">
+			<fileset dir="${pages.dir}">
+				<exclude name="WEB-INF/lib/**" />
+				<exclude name="WEB-INF/*.xml" />
+			</fileset>
+			<lib dir="${lib.dir}">
+				<exclude name="javaee.jar" />
+				<exclude name="servlet-api.jar" />
+			</lib>
+			<classes dir="${temp.dir.classes}" />
+		</war>
+	</target>
+	
+	<target name="junit" depends="package" if="doJunit">
+		<echo>=== junit test ===</echo>
+		<tstamp/>
+		<mkdir dir="${log.dir}/framework-${DSTAMP}-${TSTAMP}"/>
+		<junit printsummary="true">
+			<classpath>
+				<pathelement path="${temp.dir.classes}"/>
+				<fileset dir="${lib.dir}">
+					<include name="**/*.jar"/>
+				</fileset>
+			</classpath>
+			<formatter type="plain"/>
+			<batchtest fork="yes" todir="${log.dir}/framework-${DSTAMP}-${TSTAMP}">
+				<fileset dir="${temp.dir.classes}">
+					<include name="**/*ServiceTest.class"/>
+				</fileset>
+			</batchtest>
+		</junit>
+	</target>
+	
+	<target name="javadoc" depends="junit" if="doJavadoc">
+		<echo>=== generate javadoc ===</echo>
+		<delete dir="${javadoc.dir}" />
+		<mkdir dir="${javadoc.dir}" />
+		<javadoc destdir="${javadoc.dir}"  windowtitle="Library" use="yes" linksource="no" splitindex="yes" author="yes" encoding="utf-8" charset="utf-8" docencoding="utf-8"> 
+			<classpath> 
+				<fileset dir="${lib.dir}"> 
+					<include name="**/*.jar"/> 
+				</fileset> 
+			</classpath>
+			<packageset dir="${src.dir}" defaultexcludes="yes"> 
+				<include name="**"/> 
+			</packageset> 
+		</javadoc> 
+		<zip destfile="${build.dir}/javadoc.zip" basedir="${javadoc.dir}" includes="**/*"></zip>
+	</target>
+		
+	<target name="install" depends="package">
+		<echo>=== INSTALL ===</echo>
+		<copy file="${package.file}" tofile="${webapp.dir}/${package.name}" overwrite="true" />
+	</target>
+</project>
