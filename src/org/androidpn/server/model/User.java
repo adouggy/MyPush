@@ -18,17 +18,13 @@ import javax.persistence.Transient;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
-/** 
- * This class represents the basic user object.
- *
- */
 @Entity
-@Table(name = "apn_user")
+@Table(name = "user")
 public class User implements Serializable {
 
-    private static final long serialVersionUID = 4733464888738356502L;
+	private static final long serialVersionUID = 1L;
 
-    @Id
+	@Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
@@ -53,31 +49,6 @@ public class User implements Serializable {
     @Transient
     private boolean online;
     
-    /**
-     * Add extra column for user
-     * @author ade
-     */
-    @Column( name = "applist", length=5000 )
-    private String appList;
-    @Column( name = "isRoot", length=20 )
-    private String isRoot;
-    @Column( name = "adminPolicy", length=2000 )
-    private String adminPolicy;
-    @Column( name = "simInfo", length=1000 )
-    private String simInfo;
-    @Column( name = "sysList", length=1000 )
-    private String sysList;
-    @Column( name = "locationGPS", length=1000 )
-    private String locationGPS;
-    @Column( name = "locationWIFI", length=1000 )
-    private String locationWIFI;
-    @Column( name = "androidID", length=100 )
-    private String androidID;
-    @Column( name = "cpuID", length=1000 )
-    private String cpuID;
-    @Column( name = "telID", length=100 )
-    private String telID;
-    
 	@OneToMany(mappedBy="user",cascade=CascadeType.ALL, fetch=FetchType.LAZY)
 	private List<OnlineRecord> onlineRecords;
     
@@ -92,89 +63,6 @@ public class User implements Serializable {
 		this.onlineRecords = onlineRecords;
 	}
 
-	public String getIsRoot() {
-		return isRoot;
-	}
-
-	public void setIsRoot(String isRoot) {
-		this.isRoot = isRoot;
-	}
-
-	public String getAdminPolicy() {
-		return adminPolicy;
-	}
-
-	public void setAdminPolicy(String adminPolicy) {
-		this.adminPolicy = adminPolicy;
-	}
-
-	public String getSimInfo() {
-		return simInfo;
-	}
-
-	public void setSimInfo(String simInfo) {
-		this.simInfo = simInfo;
-	}
-
-	public String getSysList() {
-		return sysList;
-	}
-
-	public void setSysList(String sysList) {
-		this.sysList = sysList;
-	}
-
-	public String getLocationGPS() {
-		return locationGPS;
-	}
-
-	public void setLocationGPS(String locationGPS) {
-		this.locationGPS = locationGPS;
-	}
-
-	public String getLocationWIFI() {
-		return locationWIFI;
-	}
-
-	public void setLocationWIFI(String locationWIFI) {
-		this.locationWIFI = locationWIFI;
-	}
-
-	public String getAndroidID() {
-		return androidID;
-	}
-
-	public void setAndroidID(String androidID) {
-		this.androidID = androidID;
-	}
-
-	public String getCpuID() {
-		return cpuID;
-	}
-
-	public void setCpuID(String cpuID) {
-		this.cpuID = cpuID;
-	}
-
-	public String getTelID() {
-		return telID;
-	}
-
-	public void setTelID(String telID) {
-		this.telID = telID;
-	}
-
-	public String getAppList() {
-		return appList;
-	}
-
-	public void setAppList(String appList) {
-		this.appList = appList;
-	}
-
-	/**
-     * end extra column
-     */
 
     public User() {
     }

@@ -18,7 +18,7 @@
 		<property name="c3p0.max_statements">100</property>
 		<property name="c3p0.min_size">5</property>
 		<property name="c3p0.timeout">90</property>
-		<property name="c3p0.preferredTestQuery ">select * from apn_user</property>
+		<property name="c3p0.preferredTestQuery ">select * from user</property>
 		<property name="c3p0.idleConnectionTestPeriod ">18000</property>
 		<property name="c3p0.maxIdleTime">25000</property>
 		<property name="c3p0.testConnectionOnCheckout">true</property>
@@ -51,7 +51,6 @@
 
 		<!-- Mapping Files -->
 		<mapping class="org.androidpn.server.model.User" />
-		<mapping class="org.androidpn.server.model.KeyValueBean" />
 		<mapping class="org.androidpn.server.model.OnlineRecord" />
 		<mapping class="org.androidpn.server.model.Message" />
 		<mapping class="org.androidpn.server.model.PushRecord" />

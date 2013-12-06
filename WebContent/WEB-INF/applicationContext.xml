@@ -26,9 +26,9 @@
 		<property name="queueCapacity" value="500" />
 	</bean>
 
-	<bean id="checkJob" class="net.synergyinfosys.xmpp.task.PushStatusCheckJob"></bean>
+	<bean id="checkJob" class="me.promenade.xmpp.task.PushStatusCheckJob"></bean>
 
-	<bean id="checkThreadPoolJob" class="net.synergyinfosys.xmpp.task.ThreadPoolCheckJob"></bean>
+	<bean id="checkThreadPoolJob" class="me.promenade.xmpp.task.ThreadPoolCheckJob"></bean>
 
 	<bean id="jobDetail"
 		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
@@ -74,7 +74,7 @@
 		<property name="targetMethod" value="doRecord" />
 	</bean>
 
-	<bean id="recordOnlineUserCountJob" class="net.synergyinfosys.xmpp.task.RecordOnlineUserCountJob"></bean>
+	<bean id="recordOnlineUserCountJob" class="me.promenade.xmpp.task.RecordOnlineUserCountJob"></bean>
 
 
 </beans>

@@ -81,7 +81,6 @@ public class Message implements Serializable {
 		this.pushRecords = pushRecords;
 	}
 
-
 	@Override
     public boolean equals(Object o) {
         if (!(o instanceof Message)) {

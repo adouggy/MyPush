@@ -2,7 +2,7 @@ package org.androidpn.server.service;
 
 import java.util.List;
 
-import net.synergyinfosys.xmpp.bean.PushStatus;
+import me.promenade.xmpp.bean.PushStatus;
 
 import org.androidpn.server.model.Message;
 import org.androidpn.server.model.PushRecord;

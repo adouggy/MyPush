@@ -68,12 +68,4 @@ public class UserDaoHibernate extends HibernateDaoSupport implements UserDao {
 			return (User) users.get(0);
 		}
 	}
-
-	@Override
-	public void updateAppList(String username, String appList) throws UserNotFoundException {
-		User u = getUserByUsername(username);
-		u.setAppList(appList);
-		getHibernateTemplate().update(u);
-
-	}
 }

@@ -6,7 +6,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.synergyinfosys.xmpp.bean.PushStatus;
+import me.promenade.xmpp.bean.PushStatus;
 
 import org.androidpn.server.model.Message;
 import org.androidpn.server.model.User;

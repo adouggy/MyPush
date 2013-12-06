@@ -2,4 +2,4 @@
 <%@ include file="/includes/taglibs.jsp"%>
 <!-- <div id="copyright">&copy; androidpn-server v0.5.0 REMIX by Ade</div>  -->
 
-<div id="copyright">copyright by &copy;Synergyinfo, REMIX by Ade</div>
+<div id="copyright">copyright by &copy; Ade</div>
