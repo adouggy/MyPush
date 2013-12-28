@@ -91,7 +91,7 @@
 				com.sun.jersey.config.property.packages
 			</param-name>
 			<param-value>
-				net.synergyinfosys.xmpp.rest
+				me.promenade.xmpp.rest
 			</param-value>
 		</init-param>
 		<load-on-startup>2</load-on-startup>

@@ -237,7 +237,7 @@ public class XmppResource {
 	 *            id:"user id"}
 	 * @return
 	 */
-	@Path("register")
+	@Path("/register")
 	@POST
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -343,7 +343,7 @@ public class XmppResource {
 	 *            JSON: {status:"ok/error", msg:"message here", id:"user id"}
 	 * @return
 	 */
-	@Path("confirm")
+	@Path("/confirm")
 	@POST
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -434,7 +434,7 @@ public class XmppResource {
 	 * 
 	 * @return
 	 */
-	@Path("s/user/{userid}")
+	@Path("/user/{userid}")
 	@DELETE
 	@Consumes(MediaType.TEXT_HTML)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -557,7 +557,7 @@ public class XmppResource {
 		return responseJson;
 	}
 
-	@Path("PushStatus")
+	@Path("/PushStatus")
 	@GET
 	@Produces(MediaType.TEXT_PLAIN)
 	@Consumes(MediaType.TEXT_PLAIN)
