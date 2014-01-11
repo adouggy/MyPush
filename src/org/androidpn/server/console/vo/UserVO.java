@@ -21,16 +21,25 @@ public class UserVO {
     private double online_percent_lastDay;
     
     private double online_percent_lastHour;
+    
+    private int partner;
+    
+    private int id;
+    
+    private long birthday;
 
 	public UserVO() {
     	
     }
     
-    public UserVO(String username, String name, String email, Date createdDate) {
+    public UserVO(String username, String name, String email, Date createdDate, int id, int partner, long birthday) {
     	this.username = username;
     	this.name = name;
     	this.email = email;
     	this.createdDate = createdDate;
+    	this.birthday = birthday;
+    	this.id = id;
+    	this.partner = partner;
     }
 
 	public boolean isOnline() {
@@ -103,6 +112,33 @@ public class UserVO {
 
 	public void setCreatedDate(Date createdDate) {
 		this.createdDate = createdDate;
+	}
+
+	public int getPartner() {
+		return partner;
+	}
+
+	public void setPartner(
+			int partner) {
+		this.partner = partner;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(
+			int id) {
+		this.id = id;
+	}
+
+	public long getBirthday() {
+		return birthday;
+	}
+
+	public void setBirthday(
+			long birthday) {
+		this.birthday = birthday;
 	}
 
 }

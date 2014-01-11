@@ -51,20 +51,22 @@ public class UserController extends MultiActionController {
 		onlineService = ServiceLocator.getOnlineRecordService();
 	}
 
-	public ModelAndView list(HttpServletRequest request,
+	public ModelAndView list(
+			HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
-		
-//		String username = "b10f7cdc904a49939006839844b7edf4";
-//		User user = userService.getUserByUsername(username);
-//		OnlineRecord r = new OnlineRecord(user,	OnlineRecord.Action.login.toString(), new Date());
-//
-//		onlineService.saveOnlineRecord(r);
-//		
-		ModelAndView mav = new ModelAndView();		
+
+		// String username = "b10f7cdc904a49939006839844b7edf4";
+		// User user = userService.getUserByUsername(username);
+		// OnlineRecord r = new OnlineRecord(user,
+		// OnlineRecord.Action.login.toString(), new Date());
+		//
+		// onlineService.saveOnlineRecord(r);
+		//
+		ModelAndView mav = new ModelAndView();
 		mav.setViewName("user/list");
 		return mav;
 	}
-	
+
 	public ModelAndView getUserList(HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
 		System.out.println( ">>> get user list table." );
@@ -103,7 +105,7 @@ public class UserController extends MultiActionController {
 		List<User> userList = userService.getUsers(orderColumn, orderType, start, pageSize);
 		List<UserVO> voList = new ArrayList<UserVO>();
 		for (User user : userList) {
-			UserVO voUser = new UserVO(user.getUsername(), user.getName(), user.getEmail(), user.getCreatedDate());
+			UserVO voUser = new UserVO(user.getUsername(), user.getName(), user.getEmail(), user.getCreatedDate(),(int)user.getId().longValue(), user.getPartner(), user.getBirthday() );
 			if (presenceManager.isAvailable(user)) {
 				user.setOnline(true);
 				voUser.setOnline(true);
@@ -153,103 +155,143 @@ public class UserController extends MultiActionController {
 		mav.setViewName("user/table");
 		return mav;
 	}
-	
-	public double getLastHourOnlinePercent(User user) {
+
+	public double getLastHourOnlinePercent(
+			User user) {
 		Calendar cal = Calendar.getInstance();
 		Date endTime = cal.getTime();
-		
-		cal.add(Calendar.HOUR_OF_DAY, -1);
+
+		cal.add(Calendar.HOUR_OF_DAY,
+				-1);
 		Date startTime = cal.getTime();
-		
-		return this.getOnlinePercent(user, startTime, endTime);
-	}
-	
-	public double getLastDayOnlinePercent(User user) {
-		Calendar cal = Calendar.getInstance();	
-		Date endTime = cal.getTime();
-		
-		cal.add(Calendar.DAY_OF_YEAR, -1);
-		Date startTime = cal.getTime();
-		
-		return this.getOnlinePercent(user, startTime, endTime);
-	}
-	
-	public double getlastWeekOnlinePercent(User user){
-		Calendar cal = Calendar.getInstance();		
-		Date endTime = cal.getTime();
-		
-		cal.add(Calendar.DAY_OF_YEAR, -7);
-		Date startTime = cal.getTime();
-		
-		return this.getOnlinePercent(user, startTime, endTime);
+
+		return this.getOnlinePercent(user,
+				startTime,
+				endTime);
 	}
 
-	public double getlastMonthOnlinePercent(User user){
-		Calendar cal = Calendar.getInstance();		
+	public double getLastDayOnlinePercent(
+			User user) {
+		Calendar cal = Calendar.getInstance();
 		Date endTime = cal.getTime();
-		
-		cal.add(Calendar.DAY_OF_YEAR, -30);
+
+		cal.add(Calendar.DAY_OF_YEAR,
+				-1);
 		Date startTime = cal.getTime();
-		
-		return this.getOnlinePercent(user, startTime, endTime);
+
+		return this.getOnlinePercent(user,
+				startTime,
+				endTime);
 	}
-	
-	//得到在线百分比
-	public double getOnlinePercent(User user, Date startTime, Date endTime) {
-		List<OnlineRecord> list = this.getOnlineList(user, startTime, endTime);
-		
+
+	public double getlastWeekOnlinePercent(
+			User user) {
+		Calendar cal = Calendar.getInstance();
+		Date endTime = cal.getTime();
+
+		cal.add(Calendar.DAY_OF_YEAR,
+				-7);
+		Date startTime = cal.getTime();
+
+		return this.getOnlinePercent(user,
+				startTime,
+				endTime);
+	}
+
+	public double getlastMonthOnlinePercent(
+			User user) {
+		Calendar cal = Calendar.getInstance();
+		Date endTime = cal.getTime();
+
+		cal.add(Calendar.DAY_OF_YEAR,
+				-30);
+		Date startTime = cal.getTime();
+
+		return this.getOnlinePercent(user,
+				startTime,
+				endTime);
+	}
+
+	// 得到在线百分比
+	public double getOnlinePercent(
+			User user,
+			Date startTime,
+			Date endTime) {
+		List<OnlineRecord> list = this.getOnlineList(user,
+				startTime,
+				endTime);
+
 		Date logout = null;
 		Date login = null;
 		Long onlineTime = 0l;
-		for(int j=0; j<list.size(); j++) {
+		for (int j = 0; j < list.size(); j++) {
 			OnlineRecord r = list.get(j);
-			if(OnlineRecord.Action.logout.equals(r.getAction())) {
+			if (OnlineRecord.Action.logout.equals(r.getAction())) {
 				logout = r.getTime();
-			} else if(OnlineRecord.Action.login.equals(r.getAction()) && logout != null){
+			} else if (OnlineRecord.Action.login.equals(r.getAction()) && logout != null) {
 				login = r.getTime();
-				onlineTime += logout.getTime()-login.getTime();
+				onlineTime += logout.getTime() - login.getTime();
 				logout = null;
 			}
 		}
-		
-		return 1.0d*onlineTime/(endTime.getTime()-startTime.getTime());
+
+		return 1.0d * onlineTime / (endTime.getTime() - startTime.getTime());
 	}
-	
+
 	// get online list
-	public List<OnlineRecord> getOnlineList(User user, Date startTime, Date endTime) {
-		List<OnlineRecord> list = onlineService.getOnlineRecords(user, startTime, endTime, "time", Order.desc);
-		
-		//如果结果为0，则要看一下在这之前和之后是否有login和logout的记录，如果有则表示这段时间一直在线着
-		if(list != null && list.size() == 0) {
-			List<OnlineRecord> before = onlineService.getOnlineRecords(user, null, startTime, "time", Order.desc);
-			List<OnlineRecord> after = onlineService.getOnlineRecords(user, endTime, null, "time", Order.asc);
-			//如果之前是login，则表示此时段在线，给列表暂时增加一个startTime的login记录
-			if(before.size() > 0 && before.get(0).getAction().equals(OnlineRecord.Action.login)) {
+	public List<OnlineRecord> getOnlineList(
+			User user,
+			Date startTime,
+			Date endTime) {
+		List<OnlineRecord> list = onlineService.getOnlineRecords(user,
+				startTime,
+				endTime,
+				"time",
+				Order.desc);
+
+		// 如果结果为0，则要看一下在这之前和之后是否有login和logout的记录，如果有则表示这段时间一直在线着
+		if (list != null && list.size() == 0) {
+			List<OnlineRecord> before = onlineService.getOnlineRecords(user,
+					null,
+					startTime,
+					"time",
+					Order.desc);
+			List<OnlineRecord> after = onlineService.getOnlineRecords(user,
+					endTime,
+					null,
+					"time",
+					Order.asc);
+			// 如果之前是login，则表示此时段在线，给列表暂时增加一个startTime的login记录
+			if (before.size() > 0 && before.get(0).getAction().equals(OnlineRecord.Action.login)) {
 				OnlineRecord record = new OnlineRecord(user, OnlineRecord.Action.login, startTime);
-				list.add(list.size(), record);
+				list.add(list.size(),
+						record);
 			}
-			//如果之后是logout，则表示此时段在线，给列表暂时增加一个endTime的logout记录
-			if(after.size() > 0 && after.get(0).getAction().equals(OnlineRecord.Action.logout)) {
+			// 如果之后是logout，则表示此时段在线，给列表暂时增加一个endTime的logout记录
+			if (after.size() > 0 && after.get(0).getAction().equals(OnlineRecord.Action.logout)) {
 				OnlineRecord record = new OnlineRecord(user, OnlineRecord.Action.logout, endTime);
-				list.add(0, record);
+				list.add(0,
+						record);
 			}
 		}
-		
-		if(list == null || list.size()<=0) {
+
+		if (list == null || list.size() <= 0) {
 			return new ArrayList<OnlineRecord>();
 		}
 
-		//如果第一个是login，则认为用户在endTime时未登出，还在登录中，给列表暂加一个endTime时间的登出记录
-		if(OnlineRecord.Action.login.equals(list.get(0).getAction())) {
+		// 如果第一个是login，则认为用户在endTime时未登出，还在登录中，给列表暂加一个endTime时间的登出记录
+		if (OnlineRecord.Action.login.equals(list.get(0).getAction())) {
 			OnlineRecord record = new OnlineRecord(user, OnlineRecord.Action.logout, endTime);
-			list.add(0, record);
+			list.add(0,
+					record);
 		}
-		//如果最后一个是logout，则认为用户在startTime时已登入，在登录中，给列表暂加一个startTime时间的登入记录
-		if(OnlineRecord.Action.logout.equals(list.get(list.size()-1).getAction())) {
+		// 如果最后一个是logout，则认为用户在startTime时已登入，在登录中，给列表暂加一个startTime时间的登入记录
+		if (OnlineRecord.Action.logout.equals(list.get(list.size() - 1).getAction())) {
 			OnlineRecord record = new OnlineRecord(user, OnlineRecord.Action.login, startTime);
-			list.add(list.size(), record);
+			list.add(list.size(),
+					record);
 		}
 		return list;
 	}
-	
+
 }

@@ -45,6 +45,15 @@ public class User implements Serializable {
 
     @Column(name = "updated_date")
     private Date updatedDate;
+    
+    @Column(name = "birthday")
+    private long birthday;
+    
+    @Column(name = "partner")
+    private int partner;
+    
+    @Column(name = "gender")
+    private boolean gender;
 
     @Transient
     private boolean online;
@@ -134,8 +143,37 @@ public class User implements Serializable {
     public void setOnline(boolean online) {
         this.online = online;
     }
+    
+    
 
-    @Override
+    public long getBirthday() {
+		return birthday;
+	}
+
+	public void setBirthday(
+			long birthday) {
+		this.birthday = birthday;
+	}
+
+	public int getPartner() {
+		return partner;
+	}
+
+	public void setPartner(
+			int partner) {
+		this.partner = partner;
+	}
+
+	public boolean isGender() {
+		return gender;
+	}
+
+	public void setGender(
+			boolean gender) {
+		this.gender = gender;
+	}
+
+	@Override
     public boolean equals(Object o) {
         if (!(o instanceof User)) {
             return false;

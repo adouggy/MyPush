@@ -18,7 +18,7 @@
 		<table id="tableList" class="tableList" cellspacing="1">
 		<thead>
 			<tr>
-			 
+			 	<th id="id">#</th>
 				<th id="Online" 
 					class="link<% if("online".equals(column)) out.print(" order_"+type); %>"
 					onclick="javascript:gotoPageByOrder('${pageIndex}','online','${orderColumn}','${orderType}');">
@@ -45,13 +45,15 @@
 				<th id="online_lastWeek">online_lastWeek</th>
 				<th id="online_lastMonth">online_lastMonth</th>
 				
-				<th id="Operation">Operation</th>
-			
+				<!-- <th id="Operation">Operation</th> -->
+				<th id="partner">partner</th>
+				<th id="birthday">birthday</th>
 			</tr>
 		</thead>
 		<tbody>
 			<c:forEach var="user" items="${userList}">
 				<tr>
+					<td><c:out value="${user.id}" /></td>
 					<td align="center"><c:choose>
 							<c:when test="${user.online eq true}">
 								<img src="images/user-online.png" />
@@ -75,11 +77,13 @@
 					<td ><fmt:formatNumber type="percent" minFractionDigits="1" 
 							value="${user.online_percent_lastMonth}" /></td>
 					
-					<td>
+					<%-- <td>
 						<button onclick="javascript:manage('${user.username}');">管理</button>
 						<button onclick="javascript:manageb('${user.username}');">管理2</button>
 						<button onclick="javascript:deleteUser('${user.username}');">删除</button>
-					</td>
+					</td> --%>
+					<td><c:out value="${user.partner}" /></td>
+					<td><c:out value="${user.birthday}" /></td>
 				</tr>
 			</c:forEach>
 		</tbody>

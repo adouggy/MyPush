@@ -262,12 +262,23 @@ public class XmppResource {
 
 		log.info("Input JSON:" + param.toString());
 
-		String username, password, email, name;
+		String username, password, email, name, genderStr;
+		long birthday;
+		int partner;
+
 		try {
 			username = param.getString("username");
 			password = param.getString("password");
 			email = param.getString("email");
 			name = param.getString("name");
+			birthday = param.getLong("birthday");
+			genderStr = param.getString("gender");
+
+			if (!param.isNull("partner")) {
+				partner = param.getInt("partner");
+			} else {
+				partner = -1;
+			}
 		} catch (JSONException e) {
 			e.printStackTrace();
 			return responseJson;
@@ -282,6 +293,9 @@ public class XmppResource {
 		user.setPassword(password);
 		user.setEmail(email);
 		user.setName(name);
+		user.setBirthday(birthday);
+		user.setGender((genderStr == null || genderStr.compareTo("1") != 0) ? false : true);
+		user.setPartner(partner);
 
 		try {
 			responseJson.put("status",
@@ -392,8 +406,7 @@ public class XmppResource {
 			e.printStackTrace();
 		}
 
-		User user;
-		user = userDao.getUserByUsername(username);
+		User user = userDao.getUserByUsername(username);
 		if (user == null) {
 			return responseJson;
 		}
@@ -422,6 +435,19 @@ public class XmppResource {
 					"user comfirm ok");
 			responseJson.put("id",
 					user.getId());
+			responseJson.put("email",
+					user.getEmail());
+			responseJson.put("partner",
+					user.getPartner());
+			responseJson.put("gender",
+					user.isGender());
+			responseJson.put("birthday",
+					user.getBirthday());
+			responseJson.put("name",
+					user.getName());
+			responseJson.put("username",
+					user.getUsername());
+
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
@@ -574,7 +600,46 @@ public class XmppResource {
 		} else {
 			return PushStatusMap.INSTANCE.toString();
 		}
-
 	}
 
+	@Path("/addPartner/{user1}/{user2}")
+	@GET
+	@Consumes(MediaType.TEXT_HTML)
+	@Produces(MediaType.APPLICATION_JSON)
+	public JSONObject addPartner(
+			@PathParam("user1") long id1,
+			@PathParam("user2") long id2) throws JSONException {
+
+		JSONObject responseJson = new JSONObject();
+		responseJson.put("status",
+				"error");
+		responseJson.put("msg",
+				"wrong input");
+
+		User user1 = null, user2 = null;
+		try {
+			user1 = userDao.getUser(id1);
+			user2 = userDao.getUser(id2);
+		} catch (UserNotFoundException e) {
+			e.printStackTrace();
+		}
+
+		if (user1 == null) {
+			responseJson.put("msg",
+					"user1 not exists");
+			return responseJson;
+		}
+		if(user2 == null){
+			responseJson.put("msg", "user2 not exists");
+			return responseJson;
+		}
+		
+		user1.setPartner((int)user2.getId().longValue());
+		userDao.saveUser(user1);
+		
+		responseJson.put("status", "ok");
+		responseJson.put("msg", "partner added");
+
+		return responseJson;
+	}
 }
