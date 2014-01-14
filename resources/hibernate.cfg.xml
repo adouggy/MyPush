@@ -51,6 +51,7 @@
 
 		<!-- Mapping Files -->
 		<mapping class="org.androidpn.server.model.User" />
+		<mapping class="org.androidpn.server.model.UserPhoto" />
 		<mapping class="org.androidpn.server.model.OnlineRecord" />
 		<mapping class="org.androidpn.server.model.Message" />
 		<mapping class="org.androidpn.server.model.PushRecord" />

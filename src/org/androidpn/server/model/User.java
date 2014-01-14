@@ -54,7 +54,7 @@ public class User implements Serializable {
     
     @Column(name = "gender")
     private boolean gender;
-
+    
     @Transient
     private boolean online;
     

@@ -60,6 +60,10 @@
 		<property name="sessionFactory" ref="sessionFactory" />
 	</bean>
 	
+	<bean id="userPhotoDao" class="org.androidpn.server.dao.hibernate.UserPhotoDaoHibernate">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
+	
 	<bean id="onlineRecordDao" class="org.androidpn.server.dao.hibernate.OnlineRecordDaoHibernate">
 		<property name="sessionFactory" ref="sessionFactory" />
 	</bean>

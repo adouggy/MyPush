@@ -25,8 +25,10 @@ import me.promenade.xmpp.service.PushThreadPool;
 
 import org.androidpn.server.console.vo.SessionVO;
 import org.androidpn.server.dao.UserDao;
+import org.androidpn.server.dao.UserPhotoDao;
 import org.androidpn.server.model.Message;
 import org.androidpn.server.model.User;
+import org.androidpn.server.model.UserPhoto;
 import org.androidpn.server.service.MessageService;
 import org.androidpn.server.service.UserNotFoundException;
 import org.androidpn.server.xmpp.session.ClientSession;
@@ -50,12 +52,18 @@ public class XmppResource {
 	private HttpServletResponse response;
 
 	private UserDao userDao;
+	private UserPhotoDao userPhotoDao;
 
 	private MessageService messageService;
 
 	public void setUserDao(
 			UserDao userDao) {
 		this.userDao = userDao;
+	}
+
+	public void setUserPhotoDao(
+			UserPhotoDao userPhotoDao) {
+		this.userPhotoDao = userPhotoDao;
 	}
 
 	public void setMessageService(
@@ -509,24 +517,21 @@ public class XmppResource {
 	 * get user
 	 * 
 	 * @return
+	 * @throws JSONException
 	 */
 	@Path("/user/{userid}")
 	@GET
 	@Consumes(MediaType.TEXT_HTML)
 	@Produces(MediaType.APPLICATION_JSON)
 	public JSONObject getUser(
-			@PathParam("userid") String id) {
+			@PathParam("userid") String id) throws JSONException {
 		log.info("/user/" + id + " [DELETE] invoke..");
 
 		JSONObject responseJson = new JSONObject();
-		try {
-			responseJson.put("status",
-					"error");
-			responseJson.put("msg",
-					"wrong input");
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
+		responseJson.put("status",
+				"error");
+		responseJson.put("msg",
+				"wrong input");
 
 		User u = null;
 		try {
@@ -576,6 +581,16 @@ public class XmppResource {
 					userId);
 			responseJson.put("presence",
 					presence);
+			responseJson.put("email",
+					u.getEmail());
+			responseJson.put("birthday",
+					u.getBirthday());
+			responseJson.put("msg",
+					"user found");
+			responseJson.put("partner",
+					u.getPartner());
+			responseJson.put("gender",
+					u.isGender());
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
@@ -607,8 +622,9 @@ public class XmppResource {
 	@Consumes(MediaType.TEXT_HTML)
 	@Produces(MediaType.APPLICATION_JSON)
 	public JSONObject addPartner(
-			@PathParam("user1") long id1,
-			@PathParam("user2") long id2) throws JSONException {
+			@PathParam("user1") String name1,
+			@PathParam("user2") String name2) throws JSONException {
+		log.info("try to add friend " + name1 + "<->" + name2);
 
 		JSONObject responseJson = new JSONObject();
 		responseJson.put("status",
@@ -617,28 +633,122 @@ public class XmppResource {
 				"wrong input");
 
 		User user1 = null, user2 = null;
-		try {
-			user1 = userDao.getUser(id1);
-			user2 = userDao.getUser(id2);
-		} catch (UserNotFoundException e) {
-			e.printStackTrace();
-		}
+		user1 = userDao.getUserByUsername(name1);
+		user2 = userDao.getUserByUsername(name2);
 
 		if (user1 == null) {
 			responseJson.put("msg",
 					"user1 not exists");
 			return responseJson;
 		}
-		if(user2 == null){
-			responseJson.put("msg", "user2 not exists");
+		if (user2 == null) {
+			responseJson.put("msg",
+					"user2 not exists");
 			return responseJson;
 		}
-		
-		user1.setPartner((int)user2.getId().longValue());
+
+		user1.setPartner((int) user2.getId().longValue());
 		userDao.saveUser(user1);
-		
-		responseJson.put("status", "ok");
-		responseJson.put("msg", "partner added");
+
+		responseJson.put("status",
+				"ok");
+		responseJson.put("msg",
+				"partner added");
+
+		return responseJson;
+	}
+
+	@Path("/getPhoto/{userId}")
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	public JSONObject getPhoto(
+			@PathParam("userId") long userId) throws JSONException {
+		log.info("try to get photo for " + userId);
+
+		JSONObject responseJson = new JSONObject();
+		responseJson.put("status",
+				"error");
+		responseJson.put("msg",
+				"wrong input");
+
+		User user1 = null;
+		try {
+			user1 = userDao.getUser(userId);
+		} catch (UserNotFoundException e) {
+			e.printStackTrace();
+		}
+
+		if (user1 == null) {
+			responseJson.put("msg",
+					"user not exists");
+			return responseJson;
+		}
+
+		UserPhoto up = userPhotoDao.getUserPhotoByUserId(user1.getId());
+		if (up == null) {
+			responseJson.put("msg",
+					"no photo for user yet");
+			return responseJson;
+		}
+
+		log.info("photo:" + up.getPhoto());
+
+		responseJson.put("status",
+				"ok");
+		responseJson.put("msg",
+				"found photo");
+		responseJson.put("photo",
+				up.getPhoto());
+
+		return responseJson;
+
+	}
+
+	@Path("/addPhoto/{userId}")
+	@POST
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public JSONObject addPhoto(
+			@PathParam("userId") long userId,
+			JSONObject param) throws JSONException {
+		log.info("try to add photo for " + userId);
+
+		JSONObject responseJson = new JSONObject();
+		responseJson.put("status",
+				"error");
+		responseJson.put("msg",
+				"wrong input");
+
+		User user1 = null;
+		try {
+			user1 = userDao.getUser(userId);
+		} catch (UserNotFoundException e) {
+			e.printStackTrace();
+		}
+
+		if (user1 == null) {
+			responseJson.put("msg",
+					"user not exists");
+			return responseJson;
+		}
+
+		UserPhoto up = userPhotoDao.getUserPhotoByUserId(user1.getId());
+		if (up == null) {
+			up = new UserPhoto();
+		}
+		log.info("photo:" + param.toString());
+		String base64 = param.getString("photo");
+
+		up.setPhoto(base64);
+		up.setUserId(user1.getId().intValue());
+		userPhotoDao.saveUserPhoto(up);
+
+		if (user1 != null) {
+			responseJson.put("status",
+					"ok");
+			responseJson.put("msg",
+					"photo added");
+		}
 
 		return responseJson;
 	}
