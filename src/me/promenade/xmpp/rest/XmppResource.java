@@ -1,13 +1,10 @@
 package me.promenade.xmpp.rest;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -23,7 +20,6 @@ import me.promenade.xmpp.bean.PushTask;
 import me.promenade.xmpp.service.PushStatusMap;
 import me.promenade.xmpp.service.PushThreadPool;
 
-import org.androidpn.server.console.vo.SessionVO;
 import org.androidpn.server.dao.UserDao;
 import org.androidpn.server.dao.UserPhotoDao;
 import org.androidpn.server.model.Message;
@@ -277,10 +273,10 @@ public class XmppResource {
 		try {
 			username = param.getString("username");
 			password = param.getString("password");
-			email = param.getString("email");
-			name = param.getString("name");
-			birthday = param.getLong("birthday");
-			genderStr = param.getString("gender");
+			email = param.isNull("email")?"":param.getString("email");
+			name = param.isNull("name")?"":param.getString("name");
+			birthday = param.isNull("birthday")?0:param.getLong("birthday");
+			genderStr = param.isNull("gender")?"1":param.getString("gender");
 
 			if (!param.isNull("partner")) {
 				partner = param.getInt("partner");
@@ -468,50 +464,50 @@ public class XmppResource {
 	 * 
 	 * @return
 	 */
-	@Path("/user/{userid}")
-	@DELETE
-	@Consumes(MediaType.TEXT_HTML)
-	@Produces(MediaType.APPLICATION_JSON)
-	public JSONObject deleteUserById(
-			@PathParam("userid") String id) {
-		log.info("/user/" + id + " [DELETE] invoke..");
-
-		JSONObject responseJson = new JSONObject();
-		try {
-			responseJson.put("status",
-					"error");
-			responseJson.put("msg",
-					"wrong input");
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-
-		try {
-			userDao.removeUser(Long.parseLong(id));
-		} catch (NumberFormatException e) {
-			e.printStackTrace();
-			return responseJson;
-		} catch (UserNotFoundException e1) {
-			try {
-				responseJson.put("msg",
-						"User not found");
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-			return responseJson;
-		}
-
-		try {
-			responseJson.put("status",
-					"ok");
-			responseJson.put("msg",
-					"removed");
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-
-		return responseJson;
-	}
+//	@Path("/user/{userid}")
+//	@DELETE
+//	@Consumes(MediaType.TEXT_HTML)
+//	@Produces(MediaType.APPLICATION_JSON)
+//	public JSONObject deleteUserById(
+//			@PathParam("userid") String id) {
+//		log.info("/user/" + id + " [DELETE] invoke..");
+//
+//		JSONObject responseJson = new JSONObject();
+//		try {
+//			responseJson.put("status",
+//					"error");
+//			responseJson.put("msg",
+//					"wrong input");
+//		} catch (JSONException e) {
+//			e.printStackTrace();
+//		}
+//
+//		try {
+//			userDao.removeUser(Long.parseLong(id));
+//		} catch (NumberFormatException e) {
+//			e.printStackTrace();
+//			return responseJson;
+//		} catch (UserNotFoundException e1) {
+//			try {
+//				responseJson.put("msg",
+//						"User not found");
+//			} catch (JSONException e) {
+//				e.printStackTrace();
+//			}
+//			return responseJson;
+//		}
+//
+//		try {
+//			responseJson.put("status",
+//					"ok");
+//			responseJson.put("msg",
+//					"removed");
+//		} catch (JSONException e) {
+//			e.printStackTrace();
+//		}
+//
+//		return responseJson;
+//	}
 
 	/**
 	 * get user
@@ -551,7 +547,7 @@ public class XmppResource {
 		ClientSession[] sessions = new ClientSession[0];
 		sessions = SessionManager.getInstance().getSessions().toArray(sessions);
 
-		List<SessionVO> voList = new ArrayList<SessionVO>();
+//		List<SessionVO> voList = new ArrayList<SessionVO>();
 		String presence = "N/A";
 		for (ClientSession sess : sessions) {
 			String sessUserName = null;
@@ -577,6 +573,7 @@ public class XmppResource {
 			String userId = String.valueOf(u.getId());
 			responseJson.put("username",
 					username);
+			responseJson.put("name", u.getName());
 			responseJson.put("userId",
 					userId);
 			responseJson.put("presence",
@@ -657,7 +654,7 @@ public class XmppResource {
 
 		return responseJson;
 	}
-
+	
 	@Path("/getPhoto/{userId}")
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
@@ -750,6 +747,133 @@ public class XmppResource {
 					"photo added");
 		}
 
+		return responseJson;
+	}
+	
+	
+
+	@Path("/update/{userId}")
+	@POST
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
+	public JSONObject updateUser(
+			@PathParam(value = "userId") long userId,
+			JSONObject param) {
+		log.info("/xmpp/update/" + userId);
+		JSONObject responseJson = new JSONObject();
+		try {
+			responseJson.put("status",
+					"error");
+			responseJson.put("msg",
+					"wrong input");
+			responseJson.put("id",
+					"-1");
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+		if (param == null) {
+			return responseJson;
+		}
+
+		log.info("Input JSON:" + param.toString());
+
+		String username, password, email, name, genderStr;
+		long birthday;
+		int partner;
+
+		try {
+			username = param.getString("username");
+			password = param.getString("password");
+			email = param.isNull("email")?"":param.getString("email");
+			name = param.isNull("name")?"":param.getString("name");
+			birthday = param.isNull("birthday")?0:param.getLong("birthday");
+			genderStr = param.isNull("gender")?"1":param.getString("gender");
+
+			if (!param.isNull("partner")) {
+				partner = param.getInt("partner");
+			} else {
+				partner = -1;
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return responseJson;
+		}
+
+		if (username == null || username.length() == 0 || password == null || password.length() == 0) {
+			return responseJson;
+		}
+
+		User user = new User();
+		user.setUsername(username);
+		user.setPassword(password);
+		user.setEmail(email);
+		user.setName(name);
+		user.setBirthday(birthday);
+		user.setGender((genderStr == null || genderStr.compareTo("1") != 0) ? false : true);
+		user.setPartner(partner);
+
+		try {
+			responseJson.put("status",
+					"error");
+			responseJson.put("id",
+					"-1");
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+		User u = null;
+		try {
+			u = userDao.getUser(userId);
+		} catch (UserNotFoundException e2) {
+			e2.printStackTrace();
+		}
+		
+		if (u == null) {
+			try {
+				responseJson.put("status",
+						"can't find user for id" + userId);
+				return responseJson;
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		if( u.getPassword().compareTo( user.getPassword() ) != 0 ){
+			try {
+				responseJson.put("status",
+						"wrong password" );
+				return responseJson;
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}
+
+		user.setId( u.getId() );
+		try {
+			user = userDao.saveUser(user);
+		} catch (Exception e1) {
+			e1.printStackTrace();
+			try {
+				responseJson.put("msg",
+						"user insert error:" + e1.getMessage());
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+			return responseJson;
+		}
+
+		log.info("New created user:" + user.toString());
+		try {
+			responseJson.put("status",
+					"ok");
+			responseJson.put("msg",
+					"user created");
+			responseJson.put("id",
+					user.getId());
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
 		return responseJson;
 	}
 }
