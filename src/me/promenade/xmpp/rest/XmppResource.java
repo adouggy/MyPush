@@ -273,10 +273,10 @@ public class XmppResource {
 		try {
 			username = param.getString("username");
 			password = param.getString("password");
-			email = param.isNull("email")?"":param.getString("email");
-			name = param.isNull("name")?"":param.getString("name");
-			birthday = param.isNull("birthday")?0:param.getLong("birthday");
-			genderStr = param.isNull("gender")?"1":param.getString("gender");
+			email = param.isNull("email") ? "" : param.getString("email");
+			name = param.isNull("name") ? "" : param.getString("name");
+			birthday = param.isNull("birthday") ? 0 : param.getLong("birthday");
+			genderStr = param.isNull("gender") ? "1" : param.getString("gender");
 
 			if (!param.isNull("partner")) {
 				partner = param.getInt("partner");
@@ -360,13 +360,14 @@ public class XmppResource {
 	 * @param output
 	 *            JSON: {status:"ok/error", msg:"message here", id:"user id"}
 	 * @return
+	 * @throws JSONException
 	 */
 	@Path("/confirm")
 	@POST
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
 	public JSONObject confirm(
-			JSONObject param) {
+			JSONObject param) throws JSONException {
 		log.info("/xmpp/confirm");
 		JSONObject responseJson = new JSONObject();
 		try {
@@ -430,31 +431,40 @@ public class XmppResource {
 			return responseJson;
 		}
 
+		if (user.getPartner() > 0) {
+			User partner = null;
+			try {
+				partner = userDao.getUser((long) user.getPartner());
+			} catch (UserNotFoundException e) {
+				e.printStackTrace();
+			}
+			if (partner != null) {
+				responseJson.put("partnerName",
+						partner.getUsername());
+			}
+		}
+
 		log.info("user confirm ok.");
 		System.out.println("user comfirm ok.");
-		try {
-			responseJson.put("status",
-					"ok");
-			responseJson.put("msg",
-					"user comfirm ok");
-			responseJson.put("id",
-					user.getId());
-			responseJson.put("email",
-					user.getEmail());
-			responseJson.put("partner",
-					user.getPartner());
-			responseJson.put("gender",
-					user.isGender());
-			responseJson.put("birthday",
-					user.getBirthday());
-			responseJson.put("name",
-					user.getName());
-			responseJson.put("username",
-					user.getUsername());
+		responseJson.put("status",
+				"ok");
+		responseJson.put("msg",
+				"user comfirm ok");
+		responseJson.put("id",
+				user.getId());
+		responseJson.put("email",
+				user.getEmail());
+		responseJson.put("partner",
+				user.getPartner());
+		responseJson.put("gender",
+				user.isGender());
+		responseJson.put("birthday",
+				user.getBirthday());
+		responseJson.put("name",
+				user.getName());
+		responseJson.put("username",
+				user.getUsername());
 
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
 		System.out.println("response: " + responseJson.toString());
 		return responseJson;
 	}
@@ -464,50 +474,50 @@ public class XmppResource {
 	 * 
 	 * @return
 	 */
-//	@Path("/user/{userid}")
-//	@DELETE
-//	@Consumes(MediaType.TEXT_HTML)
-//	@Produces(MediaType.APPLICATION_JSON)
-//	public JSONObject deleteUserById(
-//			@PathParam("userid") String id) {
-//		log.info("/user/" + id + " [DELETE] invoke..");
-//
-//		JSONObject responseJson = new JSONObject();
-//		try {
-//			responseJson.put("status",
-//					"error");
-//			responseJson.put("msg",
-//					"wrong input");
-//		} catch (JSONException e) {
-//			e.printStackTrace();
-//		}
-//
-//		try {
-//			userDao.removeUser(Long.parseLong(id));
-//		} catch (NumberFormatException e) {
-//			e.printStackTrace();
-//			return responseJson;
-//		} catch (UserNotFoundException e1) {
-//			try {
-//				responseJson.put("msg",
-//						"User not found");
-//			} catch (JSONException e) {
-//				e.printStackTrace();
-//			}
-//			return responseJson;
-//		}
-//
-//		try {
-//			responseJson.put("status",
-//					"ok");
-//			responseJson.put("msg",
-//					"removed");
-//		} catch (JSONException e) {
-//			e.printStackTrace();
-//		}
-//
-//		return responseJson;
-//	}
+	// @Path("/user/{userid}")
+	// @DELETE
+	// @Consumes(MediaType.TEXT_HTML)
+	// @Produces(MediaType.APPLICATION_JSON)
+	// public JSONObject deleteUserById(
+	// @PathParam("userid") String id) {
+	// log.info("/user/" + id + " [DELETE] invoke..");
+	//
+	// JSONObject responseJson = new JSONObject();
+	// try {
+	// responseJson.put("status",
+	// "error");
+	// responseJson.put("msg",
+	// "wrong input");
+	// } catch (JSONException e) {
+	// e.printStackTrace();
+	// }
+	//
+	// try {
+	// userDao.removeUser(Long.parseLong(id));
+	// } catch (NumberFormatException e) {
+	// e.printStackTrace();
+	// return responseJson;
+	// } catch (UserNotFoundException e1) {
+	// try {
+	// responseJson.put("msg",
+	// "User not found");
+	// } catch (JSONException e) {
+	// e.printStackTrace();
+	// }
+	// return responseJson;
+	// }
+	//
+	// try {
+	// responseJson.put("status",
+	// "ok");
+	// responseJson.put("msg",
+	// "removed");
+	// } catch (JSONException e) {
+	// e.printStackTrace();
+	// }
+	//
+	// return responseJson;
+	// }
 
 	/**
 	 * get user
@@ -547,7 +557,7 @@ public class XmppResource {
 		ClientSession[] sessions = new ClientSession[0];
 		sessions = SessionManager.getInstance().getSessions().toArray(sessions);
 
-//		List<SessionVO> voList = new ArrayList<SessionVO>();
+		// List<SessionVO> voList = new ArrayList<SessionVO>();
 		String presence = "N/A";
 		for (ClientSession sess : sessions) {
 			String sessUserName = null;
@@ -573,7 +583,8 @@ public class XmppResource {
 			String userId = String.valueOf(u.getId());
 			responseJson.put("username",
 					username);
-			responseJson.put("name", u.getName());
+			responseJson.put("name",
+					u.getName());
 			responseJson.put("userId",
 					userId);
 			responseJson.put("presence",
@@ -647,6 +658,8 @@ public class XmppResource {
 		user1.setPartner((int) user2.getId().longValue());
 		userDao.saveUser(user1);
 
+		responseJson.put("partnerName", name2);
+		responseJson.put("partner", user2.getId());
 		responseJson.put("status",
 				"ok");
 		responseJson.put("msg",
@@ -654,7 +667,7 @@ public class XmppResource {
 
 		return responseJson;
 	}
-	
+
 	@Path("/getPhoto/{userId}")
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
@@ -749,8 +762,6 @@ public class XmppResource {
 
 		return responseJson;
 	}
-	
-	
 
 	@Path("/update/{userId}")
 	@POST
@@ -785,10 +796,10 @@ public class XmppResource {
 		try {
 			username = param.getString("username");
 			password = param.getString("password");
-			email = param.isNull("email")?"":param.getString("email");
-			name = param.isNull("name")?"":param.getString("name");
-			birthday = param.isNull("birthday")?0:param.getLong("birthday");
-			genderStr = param.isNull("gender")?"1":param.getString("gender");
+			email = param.isNull("email") ? "" : param.getString("email");
+			name = param.isNull("name") ? "" : param.getString("name");
+			birthday = param.isNull("birthday") ? 0 : param.getLong("birthday");
+			genderStr = param.isNull("gender") ? "1" : param.getString("gender");
 
 			if (!param.isNull("partner")) {
 				partner = param.getInt("partner");
@@ -828,7 +839,7 @@ public class XmppResource {
 		} catch (UserNotFoundException e2) {
 			e2.printStackTrace();
 		}
-		
+
 		if (u == null) {
 			try {
 				responseJson.put("status",
@@ -838,18 +849,18 @@ public class XmppResource {
 				e.printStackTrace();
 			}
 		}
-		
-		if( u.getPassword().compareTo( user.getPassword() ) != 0 ){
+
+		if (u.getPassword().compareTo(user.getPassword()) != 0) {
 			try {
 				responseJson.put("status",
-						"wrong password" );
+						"wrong password");
 				return responseJson;
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
 		}
 
-		user.setId( u.getId() );
+		user.setId(u.getId());
 		try {
 			user = userDao.saveUser(user);
 		} catch (Exception e1) {
@@ -863,12 +874,12 @@ public class XmppResource {
 			return responseJson;
 		}
 
-		log.info("New created user:" + user.toString());
+		log.info("user updated:" + user.toString());
 		try {
 			responseJson.put("status",
 					"ok");
 			responseJson.put("msg",
-					"user created");
+					"user updated");
 			responseJson.put("id",
 					user.getId());
 		} catch (JSONException e) {
