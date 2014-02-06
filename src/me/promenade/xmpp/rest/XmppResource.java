@@ -815,14 +815,14 @@ public class XmppResource {
 			return responseJson;
 		}
 
-		User user = new User();
-		user.setUsername(username);
-		user.setPassword(password);
-		user.setEmail(email);
-		user.setName(name);
-		user.setBirthday(birthday);
-		user.setGender((genderStr == null || genderStr.compareTo("1") != 0) ? false : true);
-		user.setPartner(partner);
+//		User user = new User();
+//		user.setUsername(username);
+//		user.setPassword(password);
+//		user.setEmail(email);
+//		user.setName(name);
+//		user.setBirthday(birthday);
+//		user.setGender((genderStr == null || genderStr.compareTo("1") != 0) ? false : true);
+//		user.setPartner(partner);
 
 		try {
 			responseJson.put("status",
@@ -850,19 +850,26 @@ public class XmppResource {
 			}
 		}
 
-		if (u.getPassword().compareTo(user.getPassword()) != 0) {
+		if (u.getPassword().compareTo(password) != 0 || u.getUsername().compareTo(username) != 0) {
 			try {
 				responseJson.put("status",
-						"wrong password");
+						"wrong password/username");
 				return responseJson;
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
 		}
+		
+		if( name != null && name.length() > 0 ){
+			u.setName(name);
+		}
+		
+		if( genderStr != null && genderStr.length() > 0 ){
+			u.setGender( genderStr.compareTo("1") == 0 ? true : false );
+		}
 
-		user.setId(u.getId());
 		try {
-			user = userDao.saveUser(user);
+			u = userDao.saveUser(u);
 		} catch (Exception e1) {
 			e1.printStackTrace();
 			try {
@@ -874,14 +881,14 @@ public class XmppResource {
 			return responseJson;
 		}
 
-		log.info("user updated:" + user.toString());
+//		log.info("user updated:" + u.toString());
 		try {
 			responseJson.put("status",
 					"ok");
 			responseJson.put("msg",
 					"user updated");
 			responseJson.put("id",
-					user.getId());
+					u.getId());
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
